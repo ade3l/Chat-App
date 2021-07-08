@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.InputFilter;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -47,7 +48,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         mUsername = ANONYMOUS;
 
+        //Main access point to our database
         mFireDatabase=FirebaseDatabase.getInstance();
+
+        //This is an object which references to a specific part of the database
         mMessegesDatabaseRefrence=mFireDatabase.getReference().child("messages");
 //        mFireDatabase.getReference() returns a refrence to the root node of the db and .child gets us the messages portion of the database
 
@@ -77,7 +81,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         // Enable Send button when there's text to send
         mMessageEditText.addTextChangedListener(new TextWatcher() {
-            //A textwatcher basically makes it so that we cant press send for empty messages
+            //A textwatcher is used so that we cant press send for empty messages
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
             }
@@ -98,15 +102,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
 
         // Send button sends a message and clears the EditText
-        mSendButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // TODO: Send messages on click
-
-                // Clear input box
-                mMessageEditText.setText("");
-            }
-        });
+//        mSendButton.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                // TODO: Send messages on click
+//
+//                // Clear input box
+//                mMessageEditText.setText("");
+//            }
+//        });
     }
 
     @Override
@@ -127,6 +131,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case (R.id.sendButton):
                 FriendlyMessage friendlyMessage=new FriendlyMessage(mMessageEditText.getText().toString(), mUsername, null);
                 //clear input box
+                Log.i("mine",mMessegesDatabaseRefrence.toString());
+                mMessegesDatabaseRefrence.push().setValue(friendlyMessage);
                 mMessageEditText.setText("");
                 break;
         }
