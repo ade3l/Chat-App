@@ -1,5 +1,7 @@
 package com.example.chatapp;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
@@ -17,6 +19,9 @@ import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 
@@ -40,6 +45,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private FirebaseDatabase mFireDatabase;
     private DatabaseReference mMessegesDatabaseRefrence;
+    private ChildEventListener mChildEventListener ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,16 +107,45 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         });
         mMessageEditText.setFilters(new InputFilter[]{new InputFilter.LengthFilter(DEFAULT_MSG_LENGTH_LIMIT)});
 
-        // Send button sends a message and clears the EditText
-//        mSendButton.setOnClickListener(new View.OnClickListener() {
-//            @Override
-//            public void onClick(View view) {
-//                // TODO: Send messages on click
-//
-//                // Clear input box
-//                mMessageEditText.setText("");
-//            }
-//        });
+        mChildEventListener = new ChildEventListener() {
+            //The DataSnapshot contains data from the Firebase database
+            // at a specific location at the exact time the listener is triggered.
+            @Override
+            public void onChildAdded(DataSnapshot snapshot,  String previousChildName) {
+                //This is the method that gets called whenever a new message is inserted
+                //into the messages list
+                FriendlyMessage newMessage=snapshot.getValue(FriendlyMessage.class);
+                //getValue can take a parameter, which is a class
+                //By passing in this parameter the code will deserialize the message
+
+                mMessageAdapter.add(newMessage);
+            }
+
+            @Override
+            public void onChildChanged(DataSnapshot snapshot,  String previousChildName) {
+//                This gets called when the contents of an existing message gets changed.
+            }
+
+            @Override
+            public void onChildRemoved(DataSnapshot snapshot) {
+//                will get called when an existing message is deleted.
+            }
+
+            @Override
+            public void onChildMoved(DataSnapshot snapshot,  String previousChildName) {
+//                would get called if one of our messages changed position in the list
+            }
+
+            @Override
+            public void onCancelled(DatabaseError error) {
+//                indicates that some sort of error occurred when you are trying to make changes.
+//                Typically, if this is being called it means that you don't have permission to
+//                read the data
+            }
+        };
+
+        mMessegesDatabaseRefrence.addChildEventListener(mChildEventListener);
+        //This listener will now get triggered for any changes in the children of the messages insteance
     }
 
     @Override
